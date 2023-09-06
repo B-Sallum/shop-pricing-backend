@@ -1,34 +1,26 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Body, Patch, Param } from '@nestjs/common';
 import { PriceUpdaterService } from './price-updater.service';
-import { CreatePriceUpdaterDto } from './dto/create-price-updater.dto';
 import { UpdatePriceUpdaterDto } from './dto/update-price-updater.dto';
 
-@Controller('price-updater')
+@Controller('price-updater/products')
 export class PriceUpdaterController {
   constructor(private readonly priceUpdaterService: PriceUpdaterService) {}
 
-  // @Post()
-  // create(@Body() createPriceUpdaterDto: CreatePriceUpdaterDto) {
-  //   return this.priceUpdaterService.create(createPriceUpdaterDto);
-  // }
-
-  @Get('products')
-  findAllProducts() {
+  @Get()
+  findAllProducts(): Promise<string> {
     return this.priceUpdaterService.findAllProducts();
   }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.priceUpdaterService.findOne(+id);
-  // }
+  @Get(':code')
+  findOne(@Param('code') code: string) {
+    return this.priceUpdaterService.findOne(+code);
+  }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updatePriceUpdaterDto: UpdatePriceUpdaterDto) {
-  //   return this.priceUpdaterService.update(+id, updatePriceUpdaterDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.priceUpdaterService.remove(+id);
-  // }
+  @Patch(':code')
+  update(
+    @Param('code') code: string,
+    @Body() updatePriceUpdaterDto: UpdatePriceUpdaterDto,
+  ) {
+    return this.priceUpdaterService.update(+code, updatePriceUpdaterDto);
+  }
 }

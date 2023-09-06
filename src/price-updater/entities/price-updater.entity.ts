@@ -1,13 +1,15 @@
+import { Decimal } from "@prisma/client/runtime/library";
+
 export class Packs {
-  id: number;
-  pack_id: number;
-  product_id: number;
-  qty: number;
+  id: bigint;
+  pack_id: bigint;
+  product_id: bigint;
+  qty: bigint;
 }
 
 export class Products {
-  code: number;
+  code: bigint;
   name: string;
-  cost_price: number;
-  sales_price: number;
+  cost_price: Decimal;
+  sales_price: Decimal;
 }

@@ -1,33 +1,33 @@
 import { Injectable } from '@nestjs/common';
-import { CreatePriceUpdaterDto } from './dto/create-price-updater.dto';
 import { UpdatePriceUpdaterDto } from './dto/update-price-updater.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Products } from './entities/price-updater.entity';
+
+const serializeBigInt = (product: Products | Products[]) => {
+  return JSON.stringify(product, (key, value) =>
+    typeof value === 'bigint' ? value.toString() : value,
+  );
+};
 
 @Injectable()
 export class PriceUpdaterService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // create(createPriceUpdaterDto: CreatePriceUpdaterDto) {
-  //   return 'This action adds a new priceUpdater';
-  // }
+  async findAllProducts() {
+    return serializeBigInt(await this.prisma.products.findMany());
+  }
 
-  async findAllProducts(): Promise<any> {
-    return JSON.stringify(
-      await this.prisma.products.findMany(),
-      (key, value) => (typeof value === 'bigint' ? value.toString() : value), // return everything else unchanged
+  async findOne(code: number) {
+    return serializeBigInt(
+      await this.prisma.products.findUnique({
+        where: {
+          code,
+        },
+      }),
     );
   }
 
-  // findOne(id: number) {
-  //   return `This action returns a #${id} priceUpdater`;
-  // }
-
-  // update(id: number, updatePriceUpdaterDto: UpdatePriceUpdaterDto) {
-  //   return `This action updates a #${id} priceUpdater`;
-  // }
-
-  // remove(id: number) {
-  //   return `This action removes a #${id} priceUpdater`;
-  // }
+  update(code: number, updatePriceUpdaterDto: UpdatePriceUpdaterDto) {
+    return `This action updates a #${code} priceUpdater`;
+  }
 }
