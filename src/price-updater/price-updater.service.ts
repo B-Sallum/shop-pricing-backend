@@ -49,7 +49,9 @@ export class PriceUpdaterService {
       +product.sales_price * 1.1 < +sales_price ||
       +product.sales_price * 0.9 > +sales_price
     )
-      throw new NotAcceptableException('The price');
+      throw new NotAcceptableException(
+        'The price cannot flutuate more than 10%',
+      );
 
     return serializeBigInt(
       await this.prisma.products.update({
