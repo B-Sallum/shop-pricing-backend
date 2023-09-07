@@ -57,7 +57,7 @@ export class PriceUpdaterService {
           code,
         },
         data: {
-          sales_price: value,
+          sales_price,
         },
       }),
     );
