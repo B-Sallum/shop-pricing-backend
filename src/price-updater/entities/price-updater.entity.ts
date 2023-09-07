@@ -7,7 +7,7 @@ export class Packs {
   qty: bigint;
 }
 
-export class Products {
+export class Product {
   code: bigint;
   name: string;
   cost_price: Decimal;

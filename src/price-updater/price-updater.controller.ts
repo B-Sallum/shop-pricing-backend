@@ -1,6 +1,6 @@
-import { Controller, Get, Body, Patch, Param } from '@nestjs/common';
+import { Controller, Get, Patch, Param } from '@nestjs/common';
 import { PriceUpdaterService } from './price-updater.service';
-import { UpdatePriceUpdaterDto } from './dto/update-price-updater.dto';
+import { Decimal } from "@prisma/client/runtime/library";
 
 @Controller('price-updater/products')
 export class PriceUpdaterController {
@@ -12,15 +12,15 @@ export class PriceUpdaterController {
   }
 
   @Get(':code')
-  findOne(@Param('code') code: string) {
+  findOne(@Param('code') code: string): Promise<string> {
     return this.priceUpdaterService.findOne(+code);
   }
 
-  @Patch(':code')
+  @Patch(':code/:newPrice')
   update(
     @Param('code') code: string,
-    @Body() updatePriceUpdaterDto: UpdatePriceUpdaterDto,
+    @Param('newPrice') sales_price: string
   ) {
-    return this.priceUpdaterService.update(+code, updatePriceUpdaterDto);
+    return this.priceUpdaterService.update(+code, new Decimal(sales_price));
   }
 }
