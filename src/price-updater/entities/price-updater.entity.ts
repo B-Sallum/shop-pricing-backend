@@ -1,6 +1,6 @@
 import { Decimal } from "@prisma/client/runtime/library";
 
-export class Packs {
+export class Pack {
   id: bigint;
   pack_id: bigint;
   product_id: bigint;

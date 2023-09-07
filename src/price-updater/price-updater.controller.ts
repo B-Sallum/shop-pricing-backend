@@ -1,26 +1,38 @@
 import { Controller, Get, Patch, Param } from '@nestjs/common';
 import { PriceUpdaterService } from './price-updater.service';
-import { Decimal } from "@prisma/client/runtime/library";
+import { Decimal } from '@prisma/client/runtime/library';
+import { Pack, Product } from './entities/price-updater.entity';
+
+const serializeBigInt = (product: Product | Product[] | [Product, Pack[]]) => {
+  return JSON.stringify(product, (key, value) =>
+    typeof value === 'bigint' ? value.toString() : value,
+  );
+};
 
 @Controller('price-updater/products')
 export class PriceUpdaterController {
   constructor(private readonly priceUpdaterService: PriceUpdaterService) {}
 
   @Get()
-  findAllProducts(): Promise<string> {
-    return this.priceUpdaterService.findAllProducts();
+  async findAllProducts(): Promise<string> {
+    return serializeBigInt(await this.priceUpdaterService.findAllProducts());
   }
 
   @Get(':code')
-  findOne(@Param('code') code: string): Promise<string> {
-    return this.priceUpdaterService.findOne(+code);
+  async findOneProduct(@Param('code') code: string): Promise<string> {
+    return serializeBigInt(
+      await this.priceUpdaterService.findOneProduct(+code),
+    );
   }
 
   @Patch(':code/:newPrice')
-  update(
+  async updateProduct(
     @Param('code') code: string,
-    @Param('newPrice') sales_price: string
+    @Param('newPrice') new_sales_price: string,
   ) {
-    return this.priceUpdaterService.update(+code, new Decimal(sales_price));
+    return await this.priceUpdaterService.updateProduct(
+      +code,
+      new Decimal(new_sales_price),
+    );
   }
 }
