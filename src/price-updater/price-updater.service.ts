@@ -11,39 +11,48 @@ import { Decimal } from '@prisma/client/runtime/library';
 export class PriceUpdaterService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAllProducts(): Promise<Product | Product[]> {
-    return await this.prisma.products.findMany();
-  }
-
-  async findOneProduct(code: number): Promise<Product | [Product, Pack[]]> {
+  getProduct = async (code: number) => {
     const product = await this.prisma.products.findUnique({
       where: {
         code,
       },
     });
 
-    const pack = await this.prisma.packs.findMany({
+    if (!product) throw new NotFoundException('Product not found');
+
+    return product;
+  };
+
+  getPack = async (code: number) => {
+    return await this.prisma.packs.findMany({
       where: {
         product_id: code,
       },
     });
-    console.log(
-      '🚀 ~ file: price-updater.service.ts:30 ~ PriceUpdaterService ~ findOneProduct ~ pack:',
-      pack.length,
-    );
+  };
+
+  async findAllProducts(): Promise<Product | Product[]> {
+    return await this.prisma.products.findMany();
+  }
+
+  async findOneProduct(code: number): Promise<Product | [Product, Pack[]]> {
+    let product = await this.getProduct(code);
+    let pack = await this.getPack(code);
 
     return pack.length === 0 ? product : [product, pack];
   }
 
   async updateProduct(code: number, new_sales_price: Decimal): Promise<string> {
     const product = await this.findOneProduct(code);
-
-    if (!product) throw new NotFoundException('Product not found');
+    console.log(
+      '🚀 ~ file: price-updater.service.ts:55 ~ PriceUpdaterService ~ updateProduct ~ product:',
+      product,
+    );
 
     // FINANCIAL RULES
     if (+product[0].cost_price > +new_sales_price)
       throw new NotAcceptableException(
-        'The new sales price should be higher than the cost price',
+        'The sales price should be lower than the cost price',
       );
 
     // MARKETING RULES
