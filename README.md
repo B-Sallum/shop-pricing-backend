@@ -1,12 +1,18 @@
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Backend for price update, created for experience and portfolio.
+
+The project uses NestJS as a framework and Prisma for abstraction of the connection to MySQL database.
 
 ## Installation
 
 ```bash
 $ npm install
 ```
+
+## Configuration
+
+The only configuration required to run locally is the replacement of the environment variable `DATABASE_URL` inside the `.env.example` file, which must be renamed to `.env` in the local project.
 
 ## Running the app
 
@@ -21,7 +27,7 @@ $ npm run dev
 $ npm run prod
 ```
 
-## Test
+## Test - To be implemented
 
 ```bash
 # unit tests
