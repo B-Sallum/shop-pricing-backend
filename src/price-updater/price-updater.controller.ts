@@ -3,7 +3,7 @@ import { PriceUpdaterService } from './price-updater.service';
 import { Decimal } from '@prisma/client/runtime/library';
 import { Pack, Product } from './entities/price-updater.entity';
 
-const serializeBigInt = (product: Product | Product[] | [Product, Pack[]]) => {
+const serializeBigInt = (product: Product | Product[] | [Product[], Pack[]]) => {
   return JSON.stringify(product, (key, value) =>
     typeof value === 'bigint' ? value.toString() : value,
   );
@@ -19,10 +19,8 @@ export class PriceUpdaterController {
   }
 
   @Get(':code')
-  async findOneProduct(@Param('code') code: string): Promise<string> {
-    return serializeBigInt(
-      await this.priceUpdaterService.findOneProduct(+code),
-    );
+  async findProductsAndPack(@Param('code') code: string): Promise<string> {
+    return serializeBigInt(await this.priceUpdaterService.findProductsAndPack(+code));
   }
 
   @Patch(':code/:newPrice')

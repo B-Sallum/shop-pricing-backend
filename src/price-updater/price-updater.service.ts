@@ -11,7 +11,7 @@ import { Decimal } from '@prisma/client/runtime/library';
 export class PriceUpdaterService {
   constructor(private readonly prisma: PrismaService) {}
 
-  getProduct = async (code: number) => {
+  getProduct = async (code: number | bigint) => {
     const product = await this.prisma.products.findUnique({
       where: {
         code,
@@ -23,10 +23,18 @@ export class PriceUpdaterService {
     return product;
   };
 
-  getPack = async (code: number) => {
+  getPackByProductId = async (product_id: number | bigint) => {
+    return await this.prisma.packs.findFirst({
+      where: {
+        product_id,
+      },
+    });
+  };
+
+  getPackByPackId = async (pack_id: number | bigint) => {
     return await this.prisma.packs.findMany({
       where: {
-        product_id: code,
+        pack_id,
       },
     });
   };
@@ -35,15 +43,35 @@ export class PriceUpdaterService {
     return await this.prisma.products.findMany();
   }
 
-  async findOneProduct(code: number): Promise<Product | [Product, Pack[]]> {
-    let product = await this.getProduct(code);
-    let pack = await this.getPack(code);
+  async findProductsAndPack(code: number): Promise<[Product[], Pack[]]> {
+    let products: Product[] = [];
+    let packs: Pack[] = [];
 
-    return pack.length === 0 ? product : [product, pack];
+    await Promise.all([
+      this.getProduct(code),
+      this.getPackByProductId(code),
+    ]).then((value) => {
+      products.push(value[0]);
+      packs.push(value[1]);
+    });
+
+    if (packs[0]) {
+      packs = await this.getPackByPackId(packs[0].pack_id);
+    }
+
+    if (packs.length > 1) {
+      products = [];
+      for (const pack of packs) {
+        const insertProduct = await this.getProduct(pack.product_id);
+        products.push(insertProduct);
+      }
+    }
+
+    return [products, packs];
   }
 
   async updateProduct(code: number, new_sales_price: Decimal): Promise<string> {
-    const product = await this.findOneProduct(code);
+    const product = await this.getProduct(code);
     console.log(
       '🚀 ~ file: price-updater.service.ts:55 ~ PriceUpdaterService ~ updateProduct ~ product:',
       product,
