@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Pack, Product } from './entities/price-updater.entity';
-import { Decimal } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class PriceUpdaterService {
@@ -18,7 +17,7 @@ export class PriceUpdaterService {
       },
     });
 
-    if (!product) throw new NotFoundException('Product not found');
+    if (!product) throw new NotFoundException('Produto não encontrado');
 
     return product;
   };
@@ -70,31 +69,59 @@ export class PriceUpdaterService {
     return [products, packs];
   }
 
-  async updateProduct(code: number, new_sales_price: Decimal): Promise<string> {
-    const product = await this.getProduct(code);
-    console.log(
-      '🚀 ~ file: price-updater.service.ts:55 ~ PriceUpdaterService ~ updateProduct ~ product:',
-      product,
-    );
+  async updateProduct(code: number, new_sales_price: number): Promise<string> {
+    let product: Product = null;
+    let isInAPack: Pack[] = null;
+    let completePack: [Product[], Pack[]] = null;
+
+    if (code.toString().length < 4) {
+      product = await this.getProduct(code);
+    } else {
+      const productsInPack = await this.getPackByPackId(code);
+      if (productsInPack.length > 1) {
+        throw new NotFoundException(
+          `Este código contém múltiplos produtos e não pode ser atualizado pelo código do pack. Atualize os preços de cada produto separadamente e o valor total do pack será atualizado automaticamente`,
+        );
+      } else {
+        product = await this.getProduct(code);
+      }
+    }
 
     // FINANCIAL RULES
-    if (+product[0].cost_price > +new_sales_price)
+    if (+product.cost_price > new_sales_price)
       throw new NotAcceptableException(
-        'The sales price should be lower than the cost price',
+        'O preço de venda deve ser maior que o preço de custo',
       );
 
-    // MARKETING RULES
+    // MARKETING RULES ~10%
     if (
-      +product[0].sales_price * 1.1 < +new_sales_price ||
-      +product[0].sales_price * 0.9 > +new_sales_price
+      +product.sales_price * 1.1 < new_sales_price ||
+      +product.sales_price * 0.9 > new_sales_price
     )
-      throw new NotAcceptableException(
-        'The price cannot flutuate more than 10%',
-      );
+      throw new NotAcceptableException('O preço não deve variar mais que 10%');
 
-    // IF IT IS A PRODUCT IN PACK RULES
+    // IF PRODUCT IN PACK RULES
+    // if (code.toString().length === (2 || 3)) {
+    //   if (completePack[1].length === 1) {
+    //     console.log('produto em pack de 1 produto');
+    //   } else if (completePack[1].length > 1) {
+    //     console.log('produto em pack com vários produtos');
+    //   }
+    // } else {
+    //   if (completePack[1].length > 1) {
+    //     console.log('pack com várias unidades de 1 produto');
+    //   } else {
+    //     console.log('pack com vários produtos e unidades');
+    //   }
+    // }
 
-    // IF IT IS A PACK TO PRODUCT UPDATE
+    // if (isInAPack) {
+    //   completePack = await this.findProductsAndPack(code);
+    //   console.log(
+    //     '🚀 ~ file: price-updater.service.ts:94 ~ PriceUpdaterService ~ updateProduct ~ completePack:',
+    //     completePack,
+    //   );
+    // }
 
     //UPDATE PRODUCT
     await this.prisma.products.update({
@@ -106,6 +133,6 @@ export class PriceUpdaterService {
       },
     });
 
-    return 'Product updated';
+    return 'Preço do produto atualizado com sucesso';
   }
 }

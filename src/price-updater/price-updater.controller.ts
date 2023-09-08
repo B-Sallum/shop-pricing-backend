@@ -1,6 +1,5 @@
 import { Controller, Get, Patch, Param } from '@nestjs/common';
 import { PriceUpdaterService } from './price-updater.service';
-import { Decimal } from '@prisma/client/runtime/library';
 import { Pack, Product } from './entities/price-updater.entity';
 
 const serializeBigInt = (product: Product | Product[] | [Product[], Pack[]]) => {
@@ -30,7 +29,7 @@ export class PriceUpdaterController {
   ) {
     return await this.priceUpdaterService.updateProduct(
       +code,
-      new Decimal(new_sales_price),
+      +new_sales_price,
     );
   }
 }
